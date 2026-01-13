@@ -15,9 +15,15 @@
     "monitor",
     "status bar"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "engines": {
     "vscode": "^1.74.0"
+  },
+  "scripts": {
+    "package": "npx vsce package",
+    "publish": "npx vsce publish",
+    "publish:patch": "npx vsce publish patch",
+    "publish:minor": "npx vsce publish minor"
   },
   "categories": [
     "Other"

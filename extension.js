@@ -151,12 +151,12 @@ function renderItem(item, label, used, limit, endTime) {
         fullDateStr = date.toLocaleString();
     }
 
-    // Text: 💎 Pro: 546.00/600.00 (91%) Exp:02/10
-    // Displaying Remaining / Limit
-    item.text = `${label}: ${leftStr}/${limitStr} (${leftPercentStr})${dateStr}`;
+    // Text: 💎 Pro: 54.19/600.00 (91%) Exp:02/10
+    // Displaying: Used / Total (Remaining %)
+    item.text = `${label}: ${usedStr}/${limitStr} (${leftPercentStr})${dateStr}`;
     
     // Tooltip
-    item.tooltip = `${label} Usage\nRemaining: ${leftStr}\nUsed: ${usedStr}\nLimit: ${limitStr}\nRemaining %: ${leftPercentStr}\nExpires: ${fullDateStr}`;
+    item.tooltip = `${label} Usage\nUsed: ${usedStr}\nLimit: ${limitStr}\nRemaining: ${leftStr}\nRemaining %: ${leftPercentStr}\nExpires: ${fullDateStr}`;
     
     // Color: Warning if remaining < 10%
     if (leftPercent < 10) {
