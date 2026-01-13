@@ -1,11 +1,11 @@
 {
-  "name": "trae-usage-monitor-plugin",
-  "displayName": "Trae Usage Monitor",
+  "name": "trae-ai-usage-monitor",
+  "displayName": "Trae AI Usage Monitor",
   "publisher": "alanqin",
   "description": "Show Trae AI Fast Request usage in status bar",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alanqin/trae-usage-monitor"
+    "url": "https://github.com/alanqin888/trae-usage-monitor"
   },
   "keywords": [
     "trae",
