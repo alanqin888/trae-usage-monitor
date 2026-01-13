@@ -1,0 +1,45 @@
+{
+  "name": "trae-usage-monitor-plugin",
+  "displayName": "Trae Usage Monitor",
+  "publisher": "alanqin",
+  "description": "Show Trae AI Fast Request usage in status bar",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alanqin/trae-usage-monitor"
+  },
+  "keywords": [
+    "trae",
+    "ai",
+    "usage",
+    "monitor",
+    "status bar"
+  ],
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Trae Usage",
+      "properties": {
+        "traeMonitor.apiUrl": {
+          "type": "string",
+          "default": "",
+          "description": "The API URL to fetch usage data (from browser network tab)"
+        },
+        "traeMonitor.token": {
+          "type": "string",
+          "default": "",
+          "description": "The 'Cloud-IDE-JWT' token from browser headers"
+        }
+      }
+    }
+  }
+}
