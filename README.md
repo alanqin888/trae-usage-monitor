@@ -3,15 +3,15 @@
 Real-time monitoring of your **Trae AI Fast Request** usage directly in your IDE status bar. 
 在 IDE 状态栏实时监控您的 Trae AI 快速请求额度。
 
-![Preview](https://i.imgur.com/example.png) <!-- Placeholder, optional -->
+![Preview](./preview.png)
 
 ## Features ✨
 
 *   **Real-time Updates**: Status bar updates automatically every 10 minutes.
 *   **Detailed Breakdown**: Separately displays **💎 Pro Plan** and **🎁 Extra Packages**.
 *   **Visual Indicators**:
-    *   Shows **Used / Total Limit**.
-    *   Shows **Percentage** usage (e.g., 18%).
+    *   Shows **Remaining / Total Limit**.
+    *   Shows **Remaining Percentage** (e.g., 82%).
     *   **Expiration Date** warning (e.g., Exp: 02/10).
     *   **Color Alerts**: Turns yellow/red when quota is running low (<10% remaining).
 *   **Privacy Focused**: Your token is stored locally in your VS Code settings and only used to query the official Trae API.
@@ -68,8 +68,8 @@ MIT
 *   **实时更新**：状态栏每 10 分钟自动刷新一次数据。
 *   **详细分类**：分开显示 **💎 Pro 计划** 和 **🎁 加油包** 的额度。
 *   **直观展示**：
-    *   显示 **已用 / 总额度**。
-    *   显示 **百分比** 使用率（例如：18%）。
+    *   显示 **剩余 / 总额度**。
+    *   显示 **剩余百分比**（例如：82%）。
     *   **过期时间** 提醒（例如：Exp: 02/10）。
     *   **颜色告警**：当额度不足时（剩余 <10%），图标变色提醒。
 *   **隐私安全**：您的 Token 仅保存在本地 VS Code 设置中，并仅用于查询 Trae 官方 API，绝不上传至任何第三方服务器。

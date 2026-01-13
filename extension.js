@@ -130,14 +130,15 @@ async function updateUsage() {
 }
 
 function renderItem(item, label, used, limit, endTime) {
-    // Format: 0.00 / 600.00
+    const left = limit - used;
     const usedStr = used.toFixed(2);
     const limitStr = limit.toFixed(2);
+    const leftStr = left.toFixed(2);
     
-    // Percentage
-    let percent = 0;
-    if (limit > 0) percent = (used / limit) * 100;
-    const percentStr = Math.round(percent) + "%";
+    // Percentage (Remaining)
+    let leftPercent = 0;
+    if (limit > 0) leftPercent = (left / limit) * 100;
+    const leftPercentStr = Math.round(leftPercent) + "%";
 
     // Date Formatting
     let dateStr = "";
@@ -150,15 +151,15 @@ function renderItem(item, label, used, limit, endTime) {
         fullDateStr = date.toLocaleString();
     }
 
-    // Text: 💎 Pro: 0.00/600.00 (0%) Exp:02/10
-    item.text = `${label}: ${usedStr}/${limitStr} (${percentStr})${dateStr}`;
+    // Text: 💎 Pro: 546.00/600.00 (91%) Exp:02/10
+    // Displaying Remaining / Limit
+    item.text = `${label}: ${leftStr}/${limitStr} (${leftPercentStr})${dateStr}`;
     
     // Tooltip
-    const left = (limit - used).toFixed(2);
-    item.tooltip = `${label} Usage\nUsed: ${usedStr}\nLimit: ${limitStr}\nRemaining: ${left}\nPercentage: ${percentStr}\nExpires: ${fullDateStr}`;
+    item.tooltip = `${label} Usage\nRemaining: ${leftStr}\nUsed: ${usedStr}\nLimit: ${limitStr}\nRemaining %: ${leftPercentStr}\nExpires: ${fullDateStr}`;
     
-    // Color: Warning if usage > 90% (Left < 10%)
-    if (percent > 90) {
+    // Color: Warning if remaining < 10%
+    if (leftPercent < 10) {
         item.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     } else {
         item.backgroundColor = undefined; 
