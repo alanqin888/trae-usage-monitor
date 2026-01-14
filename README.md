@@ -9,19 +9,22 @@ Real-time monitoring of your **Trae AI Fast Request** usage directly in your IDE
 
 Instead of manually copying the token, you can use this "Magic Bookmark" to sync your Trae token to VS Code in one click.
 
-1.  Create a new bookmark in your browser (Chrome/Edge).
-2.  Name it **"Sync Trae Token"**.
-3.  Paste the following code into the **URL** field:
+### Method 2: Browser Extension (Recommended) 🧩
 
-```javascript
-javascript:(function(){const t=localStorage.getItem("Cloud-IDE-JWT")||(document.cookie.match(/Authorization=([^;]+)/)||[])[1];if(t){window.location.href="vscode://alanqin.trae-ai-usage-monitor/update?token="+t}else{alert("Please login to Trae first!")}})()
-```
+For the best experience, install our helper browser extension. It automatically captures your token when you visit Trae.ai.
 
-**Usage:**
-1.  Open [Trae.ai](https://www.trae.ai) and ensure you are logged in.
-2.  Click the bookmark.
-3.  Click **"Open Visual Studio Code"** when prompted.
-4.  Done! Your plugin is now updated with the latest token.
+**Installation:**
+1.  [Download this repository](https://github.com/alanqin888/trae-usage-monitor/archive/refs/heads/main.zip) and unzip it.
+2.  Open Chrome or Edge and go to `chrome://extensions`.
+3.  Enable **Developer mode** (top right switch).
+4.  Click **Load unpacked** (top left).
+5.  Select the `chrome-extension` folder inside the downloaded project.
+6.  The ⚡ icon will appear. Pin it for easy access!
+
+### Method 3: Manual Token (Fallback)
+1.  Open VS Code command palette (`Cmd/Ctrl + Shift + P`).
+2.  Run `Trae Monitor: Set Token`.
+3.  Paste your token.
 
 ## Features ✨
 
@@ -68,19 +71,22 @@ MIT
 
 无需手动复制粘贴，您可以使用“魔法书签”一键将浏览器中的 Token 同步到 VS Code 插件中。
 
-1.  在浏览器（Chrome/Edge）中新建一个书签。
-2.  命名为 **"同步 Trae Token"**。
-3.  在 **网址 (URL)** 栏中粘贴以下代码：
+### 方法 2: 浏览器插件 (推荐) 🧩
 
-```javascript
-javascript:(function(){const t=localStorage.getItem("Cloud-IDE-JWT")||(document.cookie.match(/Authorization=([^;]+)/)||[])[1];if(t){window.location.href="vscode://alanqin.trae-ai-usage-monitor/update?token="+t}else{alert("Please login to Trae first!")}})()
-```
+为了获得最佳体验，建议安装我们的浏览器辅助插件。它可以在您访问 Trae.ai 时自动抓取 Token。
 
-**使用方法：**
-1.  打开 [Trae.ai](https://www.trae.ai) 官网并确保已登录。
-2.  点击这个书签。
-3.  浏览器弹出提示时，点击 **"打开 Visual Studio Code"**。
-4.  搞定！插件会自动更新 Token 并刷新数据。
+**安装步骤：**
+1.  [下载本项目](https://github.com/alanqin888/trae-usage-monitor/archive/refs/heads/main.zip) 并解压。
+2.  打开 Chrome 或 Edge 浏览器，进入扩展管理页面 `chrome://extensions`。
+3.  打开右上角的 **开发者模式 (Developer mode)** 开关。
+4.  点击左上角的 **加载已解压的扩展程序 (Load unpacked)**。
+5.  选择项目目录下的 `chrome-extension` 文件夹。
+6.  ⚡ 图标出现后，建议将其固定在工具栏以便随时使用。
+
+### 方法 3: 手动输入 (保底方案)
+1.  在 VS Code 中打开命令面板 (`Cmd/Ctrl + Shift + P`)。
+2.  输入并运行 `Trae Monitor: Set Token`。
+3.  粘贴您的 Token。
 
 ## 功能特性 ✨
 

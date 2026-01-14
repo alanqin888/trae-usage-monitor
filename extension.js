@@ -24,6 +24,39 @@ function activate(context) {
     context.subscriptions.push(itemExtra);
     itemExtra.hide();
 
+    // Clipboard Listener: Auto-detect token on window focus
+    let lastClipboardToken = "";
+    context.subscriptions.push(vscode.window.onDidChangeWindowState(async (e) => {
+        if (e.focused) {
+            try {
+                const text = await vscode.env.clipboard.readText();
+                // Check if it looks like a JWT (starts with eyJ, has 2 dots, long enough)
+                if (text && text.startsWith("eyJ") && text.includes(".") && text.length > 50) {
+                     // Check if it's different from current config
+                     const config = vscode.workspace.getConfiguration('traeMonitor');
+                     const currentToken = config.get('token');
+                     
+                     if (text !== currentToken && text !== lastClipboardToken) {
+                         const selection = await vscode.window.showInformationMessage(
+                             "📋 Detected a new Token in clipboard. Update Trae Monitor?", 
+                             "Yes", "No"
+                         );
+                         
+                         lastClipboardToken = text; // Remember we asked about this one
+                         
+                         if (selection === "Yes") {
+                             await config.update('token', text, vscode.ConfigurationTarget.Global);
+                             vscode.window.showInformationMessage("Token updated from clipboard!");
+                             updateUsage();
+                         }
+                     }
+                }
+            } catch (err) {
+                // Ignore clipboard errors
+            }
+        }
+    }));
+
     // Delay initial update slightly to ensure UI is ready
     setTimeout(updateUsage, 1000);
     intervalId = setInterval(updateUsage, 10 * 60 * 1000); // 10 mins

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 250px;
+      padding: 10px;
+      font-family: system-ui, sans-serif;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    #btnSync {
+      background: #007acc;
+      color: white;
+    }
+
+    #btnSync:hover {
+      background: #0062a3;
+    }
+
+    #btnCopy {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    #btnCopy:hover {
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+
+<body>
+  <h3>⚡ Trae Token Sync</h3>
+  <div id="msg" class="status">Looking for tokens...</div>
+  <button id="btnSync" style="display:none">🚀 Sync to VS Code</button>
+  <button id="btnCopy" style="display:none">📋 Copy to Clipboard</button>
+  <button id="btnOpen" style="display:none; background: #444; color: white;">🔗 Open Trae Dashboard</button>
+  <script src="popup.js"></script>
+</body>
+
+</html>
