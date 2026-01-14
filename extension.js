@@ -57,17 +57,17 @@ async function updateUsage() {
         return;
     }
 
+    // Visual feedback: Show spinning icon immediately
+    if (itemPro) {
+        itemPro.text = "$(sync~spin) Trae: Refreshing...";
+        itemPro.show();
+    }
+
     try {
         let usageData;
-        try {
-            console.log("Fetching usage data from:", apiUrl);
-            usageData = await fetchUsage(apiUrl, token);
-            console.log("Fetched Data:", JSON.stringify(usageData));
-        } catch (e) {
-            console.error("Fetch failed, using hardcoded backup for debugging:", e);
-            // FALLBACK FOR DEBUGGING: Use the data you successfully CURL'd earlier
-            usageData = {"is_pay_freshman":false,"user_entitlement_pack_list":[{"entitlement_base_info":{"charge_amount":0,"currency":0,"end_time":2701158344,"entitlement_id":"7517120516","product_type":3,"quota":{"premium_model_fast_request_limit":0},"start_time":1755078344},"usage":{"premium_model_fast_amount":0}},{"entitlement_base_info":{"charge_amount":0,"currency":0,"end_time":1770719770,"entitlement_id":"28065607684","product_type":1,"quota":{"premium_model_fast_request_limit":600},"start_time":1768127770},"usage":{"premium_model_fast_amount":0}},{"entitlement_base_info":{"charge_amount":0,"currency":0,"end_time":1769999291,"entitlement_id":"24151248132","product_type":2,"quota":{"premium_model_fast_request_limit":300},"start_time":1767407291},"usage":{"premium_model_fast_amount":54.19471}}]};
-        }
+        console.log("Fetching usage data from:", apiUrl);
+        usageData = await fetchUsage(apiUrl, token);
+        console.log("Fetched Data:", JSON.stringify(usageData));
         
         let proData = { used: 0, limit: 0, found: false };
         let extraData = { used: 0, limit: 0, found: false };
@@ -85,15 +85,16 @@ async function updateUsage() {
 
                 // Product Type 1 is usually Subscription (Pro), Type 2 is Package (Extra)
                 // We fallback to checking limits if type is unknown
-                if (info.product_type === 1 || limit === 600) {
+                // Update 2026-01-14: Logic is dynamic based on limits returned by API
+                if (info.product_type === 1 || limit >= 500) { 
                      proData.limit += limit;
                      proData.used += used;
-                     proData.endTime = info.end_time; // Capture end timestamp
+                     proData.endTime = info.end_time; 
                      proData.found = true;
-                } else if (info.product_type === 2 || limit === 300) {
+                } else if (info.product_type === 2 || (limit > 0 && limit < 500)) {
                      extraData.limit += limit;
                      extraData.used += used;
-                     extraData.endTime = info.end_time; // Capture end timestamp
+                     extraData.endTime = info.end_time; 
                      extraData.found = true;
                 }
             });
@@ -106,9 +107,7 @@ async function updateUsage() {
         if (proData.found) {
             renderItem(itemPro, "💎 Pro", proData.used, proData.limit, proData.endTime);
         } else {
-            // NEVER HIDE PRO - Show "No Data" or fallback
-            // This ensures the user knows the extension is alive
-            console.log("Pro data not found, showing placeholder");
+            console.log("Pro data not found");
             itemPro.text = "$(circle-slash) Trae: No Data";
             itemPro.tooltip = "Could not find Pro Plan data in the API response.\nCheck your Token or Network.";
             itemPro.show();
@@ -118,14 +117,12 @@ async function updateUsage() {
         if (extraData.found) {
             renderItem(itemExtra, "🎁 Extra", extraData.used, extraData.limit, extraData.endTime);
         } else {
-            // Extra can be hidden if not used, but let's show it as "-" for now to be sure
-            // or hide it if you prefer cleaner UI. Let's hide Extra only.
             itemExtra.hide();
         }
         
     } catch (error) {
         console.error("Critical Error in updateUsage:", error);
-        showError("Trae: Error");
+        showError("Trae: Error (Check Console)");
     }
 }
 
