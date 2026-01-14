@@ -5,6 +5,24 @@ Real-time monitoring of your **Trae AI Fast Request** usage directly in your IDE
 
 ![Preview](./preview.png)
 
+## One-Click Sync (New!) 🚀
+
+Instead of manually copying the token, you can use this "Magic Bookmark" to sync your Trae token to VS Code in one click.
+
+1.  Create a new bookmark in your browser (Chrome/Edge).
+2.  Name it **"Sync Trae Token"**.
+3.  Paste the following code into the **URL** field:
+
+```javascript
+javascript:(function(){const t=localStorage.getItem("Cloud-IDE-JWT")||(document.cookie.match(/Authorization=([^;]+)/)||[])[1];if(t){window.location.href="vscode://alanqin.trae-ai-usage-monitor/update?token="+t}else{alert("Please login to Trae first!")}})()
+```
+
+**Usage:**
+1.  Open [Trae.ai](https://www.trae.ai) and ensure you are logged in.
+2.  Click the bookmark.
+3.  Click **"Open Visual Studio Code"** when prompted.
+4.  Done! Your plugin is now updated with the latest token.
+
 ## Features ✨
 
 *   **Real-time Updates**: Status bar updates automatically every 10 minutes.
@@ -44,7 +62,25 @@ MIT
 
 # Trae 额度监控 ⚡
 
-在 IDE 状态栏实时监控您的 **Trae AI 快速请求** 额度。
+在 IDE 状态栏实时监控您的 Trae AI 快速请求额度。
+
+## 一键同步 Token (新功能!) 🚀
+
+无需手动复制粘贴，您可以使用“魔法书签”一键将浏览器中的 Token 同步到 VS Code 插件中。
+
+1.  在浏览器（Chrome/Edge）中新建一个书签。
+2.  命名为 **"同步 Trae Token"**。
+3.  在 **网址 (URL)** 栏中粘贴以下代码：
+
+```javascript
+javascript:(function(){const t=localStorage.getItem("Cloud-IDE-JWT")||(document.cookie.match(/Authorization=([^;]+)/)||[])[1];if(t){window.location.href="vscode://alanqin.trae-ai-usage-monitor/update?token="+t}else{alert("Please login to Trae first!")}})()
+```
+
+**使用方法：**
+1.  打开 [Trae.ai](https://www.trae.ai) 官网并确保已登录。
+2.  点击这个书签。
+3.  浏览器弹出提示时，点击 **"打开 Visual Studio Code"**。
+4.  搞定！插件会自动更新 Token 并刷新数据。
 
 ## 功能特性 ✨
 

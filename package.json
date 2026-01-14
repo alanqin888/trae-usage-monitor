@@ -15,7 +15,7 @@
     "monitor",
     "status bar"
   ],
-  "version": "1.0.3",
+  "version": "1.0.5",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -33,6 +33,22 @@
   ],
   "main": "./extension.js",
   "contributes": {
+    "icons": {
+        "trae-pro": {
+            "description": "Icon for Trae Pro Plan",
+            "default": {
+                "fontPath": "./icon-pro.svg",
+                "fontCharacter": "\\e900" 
+            }
+        },
+        "trae-extra": {
+            "description": "Icon for Trae Extra Package",
+            "default": {
+                "fontPath": "./icon-extra.svg",
+                "fontCharacter": "\\e901" 
+            }
+        }
+    },
     "configuration": {
       "title": "Trae Usage",
       "properties": {
