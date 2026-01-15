@@ -61,8 +61,35 @@ function activate(context) {
     setTimeout(updateUsage, 1000);
     intervalId = setInterval(updateUsage, 10 * 60 * 1000); // 10 mins
 
-    let disposable = vscode.commands.registerCommand('traeMonitor.refresh', () => {
-        updateUsage();
+    let disposable = vscode.commands.registerCommand('traeMonitor.refresh', async () => {
+        try {
+            const clipText = await vscode.env.clipboard.readText();
+            const config = vscode.workspace.getConfiguration('traeMonitor');
+            const currentToken = config.get('token') || "";
+            
+            // Check if clipboard has a valid-looking JWT
+            if (clipText && clipText.startsWith("eyJ") && clipText.includes(".") && clipText.length > 50) {
+                if (clipText !== currentToken) {
+                    // Auto-update with confirmation
+                    const choice = await vscode.window.showInformationMessage(
+                        "📋 Detected new Trae Token in clipboard. Update now?",
+                        "Yes, Update", "No, Just Refresh"
+                    );
+                    
+                    if (choice === "Yes, Update") {
+                        await config.update('token', clipText, vscode.ConfigurationTarget.Global);
+                        vscode.window.showInformationMessage("✅ Token updated from clipboard!");
+                    }
+                }
+            }
+            
+            // Now refresh
+            updateUsage();
+            
+        } catch (err) {
+            // Clipboard read failed, just refresh
+            updateUsage();
+        }
     });
     context.subscriptions.push(disposable);
     
@@ -270,7 +297,7 @@ function renderItem(item, pack, tooltip, tokenExpiring) {
     item.show();
 }
 
-function showError(msg, detail) {
+async function showError(msg, detail) {
     if (itemPro) {
         itemPro.text = `$(error) ${msg}`;
         itemPro.tooltip = detail || "An error occurred. Check Developer Console for details.";
@@ -278,6 +305,17 @@ function showError(msg, detail) {
         itemPro.show();
     }
     if (itemExtra) itemExtra.hide();
+    
+    // If it's a token error, offer to open Trae website
+    if (msg.includes("Token Invalid") || msg.includes("Token Exp")) {
+        const action = await vscode.window.showErrorMessage(
+            "🔑 Trae Token is invalid or expired. Refresh it from the website?",
+            "Open Trae Website", "Dismiss"
+        );
+        if (action === "Open Trae Website") {
+            vscode.env.openExternal(vscode.Uri.parse("https://www.trae.ai/account-setting#usage"));
+        }
+    }
 }
 
 function fetchUsage(url, token) {

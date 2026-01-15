@@ -15,7 +15,7 @@
     "monitor",
     "status bar"
   ],
-  "version": "1.0.5",
+  "version": "1.0.6",
   "engines": {
     "vscode": "^1.74.0"
   },
