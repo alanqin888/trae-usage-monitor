@@ -2,7 +2,7 @@
   "name": "trae-ai-usage-monitor",
   "displayName": "Trae AI Usage Monitor",
   "publisher": "alanqin",
-  "description": "Show Trae AI Fast Request usage in status bar",
+  "description": "Show Trae AI usage (token billing & legacy request count) in status bar",
   "icon": "icon.png",
   "repository": {
     "type": "git",
@@ -15,7 +15,7 @@
     "monitor",
     "status bar"
   ],
-  "version": "1.0.6",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.74.0"
   },
