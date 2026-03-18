@@ -1,15 +1,182 @@
 const vscode = require("vscode");
 const https = require("https");
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
 const { Buffer } = require("buffer");
 
 // Fallback defaults for immediate usage
 const DEFAULT_URL =
   "https://api-sg-central.trae.ai/trae/api/v1/pay/user_current_entitlement_list";
-const DEFAULT_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."; // Truncated for brevity
+
+// Trae local storage paths (macOS)
+const TRAE_STORAGE_PATHS = [
+  path.join(os.homedir(), "Library", "Application Support", "Trae", "User", "globalStorage", "storage.json"),
+  path.join(os.homedir(), "Library", "Application Support", "Trae CN", "User", "globalStorage", "storage.json"),
+];
+
+// Cache for auto-read token to avoid excessive file reads
+let cachedTraeAuth = null;
+let cachedTraeAuthTime = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 min cache
 
 let itemPro;
 let itemExtra;
 let intervalId;
+
+/**
+ * Read Trae's auth info directly from its local storage.
+ * Returns { token, refreshToken, expiredAt, refreshExpiredAt, host } or null.
+ */
+function getTokenFromTraeStorage() {
+  // Use cache if fresh
+  if (cachedTraeAuth && (Date.now() - cachedTraeAuthTime < CACHE_TTL)) {
+    return cachedTraeAuth;
+  }
+
+  for (const storagePath of TRAE_STORAGE_PATHS) {
+    try {
+      if (!fs.existsSync(storagePath)) continue;
+
+      const content = fs.readFileSync(storagePath, "utf-8");
+
+      // Find the iCubeAuthInfo://icube.cloudide key
+      const regex = /"iCubeAuthInfo:\/\/icube\.cloudide"\s*:\s*"((?:[^"\\]|\\.)*)"/;
+      const match = content.match(regex);
+      if (!match) continue;
+
+      // The value is a JSON string that's been escaped (double-encoded)
+      const rawValue = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      const authData = JSON.parse(rawValue);
+
+      if (authData && authData.token) {
+        console.log(`[TraeMonitor] Auto-read token from: ${storagePath}`);
+        console.log(`[TraeMonitor] Token expires: ${authData.expiredAt}`);
+        console.log(`[TraeMonitor] Refresh expires: ${authData.refreshExpiredAt}`);
+
+        cachedTraeAuth = {
+          token: authData.token,
+          refreshToken: authData.refreshToken,
+          expiredAt: authData.expiredAt,
+          refreshExpiredAt: authData.refreshExpiredAt,
+          host: authData.host || "https://api-sg-central.trae.ai",
+          userId: authData.userId,
+          storagePath,
+        };
+        cachedTraeAuthTime = Date.now();
+        return cachedTraeAuth;
+      }
+    } catch (e) {
+      console.error(`[TraeMonitor] Failed to read ${storagePath}:`, e.message);
+    }
+  }
+  return null;
+}
+
+/**
+ * Refresh the Trae access token using the refreshToken.
+ * Returns the new token string or null on failure.
+ */
+function refreshTraeToken(authInfo) {
+  return new Promise((resolve) => {
+    if (!authInfo || !authInfo.refreshToken) {
+      resolve(null);
+      return;
+    }
+
+    const refreshExpired = authInfo.refreshExpiredAt ? new Date(authInfo.refreshExpiredAt) : null;
+    if (refreshExpired && refreshExpired <= new Date()) {
+      console.log("[TraeMonitor] Refresh token also expired, need manual re-login");
+      resolve(null);
+      return;
+    }
+
+    const host = authInfo.host || "https://api-sg-central.trae.ai";
+    const parsedHost = new URL(host);
+    const body = JSON.stringify({
+      refresh_token: authInfo.refreshToken,
+    });
+
+    const options = {
+      hostname: parsedHost.hostname,
+      path: "/trae/api/v1/user/token/refresh",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        "User-Agent": "TraeMonitor/1.2",
+      },
+      timeout: 10000,
+    };
+
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => {
+        try {
+          const result = JSON.parse(data);
+          if (result && result.token) {
+            console.log("[TraeMonitor] Token refreshed successfully!");
+            // Invalidate cache so next read gets fresh data
+            cachedTraeAuth = null;
+            cachedTraeAuthTime = 0;
+            resolve(result.token);
+          } else {
+            console.log("[TraeMonitor] Token refresh response:", data.substring(0, 200));
+            resolve(null);
+          }
+        } catch (e) {
+          console.error("[TraeMonitor] Token refresh parse error:", e.message);
+          resolve(null);
+        }
+      });
+    });
+
+    req.on("error", (e) => {
+      console.error("[TraeMonitor] Token refresh network error:", e.message);
+      resolve(null);
+    });
+
+    req.on("timeout", () => {
+      req.destroy();
+      resolve(null);
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+/**
+ * Get the best available token.
+ * Priority: Trae local storage (auto) > user manual config
+ * Auto-refreshes if the stored token is expired but refreshToken is still valid.
+ */
+async function getBestToken() {
+  // 1. Try reading from Trae's local storage (zero-config!)
+  const traeAuth = getTokenFromTraeStorage();
+  if (traeAuth && traeAuth.token) {
+    // Check if token is expired
+    const tokenExpiry = traeAuth.expiredAt ? new Date(traeAuth.expiredAt) : null;
+    if (tokenExpiry && tokenExpiry <= new Date()) {
+      console.log("[TraeMonitor] Stored token expired, attempting refresh...");
+      const newToken = await refreshTraeToken(traeAuth);
+      if (newToken) return newToken;
+      // Fall through to manual config
+      console.log("[TraeMonitor] Refresh failed, falling back to manual token");
+    } else {
+      return traeAuth.token;
+    }
+  }
+
+  // 2. Fall back to manual config
+  const config = vscode.workspace.getConfiguration("traeMonitor");
+  let token = config.get("token") || "";
+  if (token.startsWith("Cloud-IDE-JWT ")) {
+    token = token.replace("Cloud-IDE-JWT ", "");
+  }
+  return token;
+}
 
 function activate(context) {
   console.log("Trae Usage Monitor active");
@@ -189,12 +356,45 @@ function activate(context) {
 async function updateUsage() {
   const config = vscode.workspace.getConfiguration("traeMonitor");
   const apiUrl = config.get("apiUrl") || DEFAULT_URL;
-  let token = config.get("token") || DEFAULT_TOKEN;
-  if (token.startsWith("Cloud-IDE-JWT "))
-    token = token.replace("Cloud-IDE-JWT ", "");
 
+  // Auto-read token: Trae local storage first, then manual config
+  let token = await getBestToken();
+  const tokenSource = (getTokenFromTraeStorage()?.token === token) ? "auto" : "manual";
+
+  // Validation: Check for missing token
   if (!apiUrl || !token) {
-    showError("Trae: Config Missing");
+    showError(
+      "Trae: Token Missing",
+      "No token found. If running inside Trae IDE, token should be auto-detected. Otherwise run 'Trae Monitor: Set Token'.",
+    );
+    const choice = await vscode.window.showInformationMessage(
+      "⚠️ Trae Token not detected. Configure now?",
+      "Set Token",
+      "Later",
+    );
+    if (choice === "Set Token") {
+      await vscode.commands.executeCommand("traeMonitor.setToken");
+    }
+    return;
+  }
+
+  // Validation: Check token format (simple heuristic)
+  const looksLikeJwt = (t) =>
+    t.startsWith("eyJ") && t.includes(".") && t.length > 50;
+
+  if (!looksLikeJwt(token)) {
+    showError(
+      "Trae: Token Invalid",
+      "Token format incorrect. Please paste a valid JWT starting with 'eyJ'.",
+    );
+    const choice = await vscode.window.showInformationMessage(
+      "⚠️ Token format looks invalid. Re-enter?",
+      "Set Token",
+      "Ignore",
+    );
+    if (choice === "Set Token") {
+      await vscode.commands.executeCommand("traeMonitor.setToken");
+    }
     return;
   }
 
@@ -329,8 +529,11 @@ async function updateUsage() {
     tooltip.isTrusted = true;
 
     tooltip.appendMarkdown(`### ⚡ Trae Usage Monitor\n\n`);
+    const sourceIcon = tokenSource === "auto" ? "🤖 Auto" : "🔧 Manual";
     if (tokenExpStr && tokenExpStr !== "Unknown") {
-      tooltip.appendMarkdown(`**🔑 Token Expires:** ${tokenExpStr}\n\n`);
+      tooltip.appendMarkdown(`**🔑 Token:** ${sourceIcon} | Expires: ${tokenExpStr}\n\n`);
+    } else {
+      tooltip.appendMarkdown(`**🔑 Token:** ${sourceIcon}\n\n`);
     }
 
     if (isDollarBilling) {
