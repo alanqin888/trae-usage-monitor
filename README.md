@@ -11,15 +11,12 @@ Instead of manually copying the token, you can use this "Magic Bookmark" to sync
 
 ### Method 2: Browser Extension (Recommended) 🧩
 
-For the best experience, install our helper browser extension. It automatically captures your token when you visit Trae.ai.
+For the best experience, install our helper browser extension directly from the Chrome Web Store. It automatically captures your token when you visit Trae.ai.
 
 **Installation:**
-1.  [Download this repository](https://github.com/alanqin888/trae-usage-monitor/archive/refs/heads/main.zip) and unzip it.
-2.  Open Chrome or Edge and go to `chrome://extensions`.
-3.  Enable **Developer mode** (top right switch).
-4.  Click **Load unpacked** (top left).
-5.  Select the `chrome-extension` folder inside the downloaded project.
-6.  The ⚡ icon will appear. Pin it for easy access!
+1.  Go to the [Trae Token Sync on Chrome Web Store](https://chromewebstore.google.com/detail/fpciknhekbebbbkblhdpddngcgpogbcj).
+2.  Click **Add to Chrome**.
+3.  The ⚡ icon will appear. Pin it for easy access!
 
 ### Method 3: Manual Token (Fallback)
 1.  Open VS Code command palette (`Cmd/Ctrl + Shift + P`).
@@ -73,15 +70,12 @@ MIT
 
 ### 方法 2: 浏览器插件 (推荐) 🧩
 
-为了获得最佳体验，建议安装我们的浏览器辅助插件。它可以在您访问 Trae.ai 时自动抓取 Token。
+为了获得最佳体验，建议直接从 Chrome 插件商店安装我们的辅助插件。它可以在您访问 Trae.ai 时自动抓取 Token。
 
 **安装步骤：**
-1.  [下载本项目](https://github.com/alanqin888/trae-usage-monitor/archive/refs/heads/main.zip) 并解压。
-2.  打开 Chrome 或 Edge 浏览器，进入扩展管理页面 `chrome://extensions`。
-3.  打开右上角的 **开发者模式 (Developer mode)** 开关。
-4.  点击左上角的 **加载已解压的扩展程序 (Load unpacked)**。
-5.  选择项目目录下的 `chrome-extension` 文件夹。
-6.  ⚡ 图标出现后，建议将其固定在工具栏以便随时使用。
+1.  访问 [Trae Token Sync - Chrome 插件商店](https://chromewebstore.google.com/detail/fpciknhekbebbbkblhdpddngcgpogbcj)。
+2.  点击 **添加至 Chrome** (Add to Chrome)。
+3.  ⚡ 图标出现后，建议将其固定在工具栏以便随时使用。
 
 ### 方法 3: 手动输入 (保底方案)
 1.  在 VS Code 中打开命令面板 (`Cmd/Ctrl + Shift + P`)。

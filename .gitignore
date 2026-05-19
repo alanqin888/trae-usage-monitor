@@ -2,3 +2,4 @@ node_modules
 .DS_Store
 *.vsix
 .agent/
+chrome-extension.zip\nstore_icon_128.png\nstore_screenshot.png
