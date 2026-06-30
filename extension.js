@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const { Buffer } = require("buffer");
+const crypto = require("crypto");
 
 // Fallback defaults for immediate usage
 const DEFAULT_URL =
@@ -24,13 +25,74 @@ let itemPro;
 let itemExtra;
 let intervalId;
 
+// Decryption obfuscation key material for Trae local storage
+const JG = Buffer.from([
+  82, 9, 106, 213, 48, 54, 165, 56, 191, 64, 163, 158, 129, 243, 215, 251, 124, 227, 57, 130,
+  155, 47, 255, 135, 52, 142, 67, 68, 196, 222, 233, 203, 84, 123, 148, 50, 166, 194, 35, 61,
+  238, 76, 149, 11, 66, 250, 195, 78, 8, 46, 161, 102, 40, 217, 36, 178, 118, 91, 162, 73,
+  109, 139, 209, 37
+]);
+const KG = Buffer.from([
+  31, 221, 168, 51, 136, 7, 199, 49, 177, 18, 16, 89, 39, 128, 236, 95, 96, 81, 127, 169, 25,
+  181, 74, 13, 45, 229, 122, 159, 147, 201, 156, 239, 160, 224, 59, 77, 174, 42, 245, 176,
+  200, 235, 187, 60, 131, 83, 153, 97, 23, 43, 4, 126, 186, 119, 214, 38, 225, 105, 20, 99,
+  85, 33, 12, 125
+]);
+const MAGIC = Buffer.from([0x74, 0x63, 0x05, 0x10, 0x00, 0x00]);
+
+/**
+ * Decrypt base64-encoded encrypted credential blobs used by newer Trae clients
+ */
+function decryptBase64Blob(b64) {
+  const blob = Buffer.from(b64.trim(), "base64");
+  if (blob.length < MAGIC.length + 32 + 16) {
+    throw new Error("Blob too short");
+  }
+  if (!blob.subarray(0, MAGIC.length).equals(MAGIC)) {
+    throw new Error("Magic mismatch");
+  }
+
+  const salt = blob.subarray(MAGIC.length, MAGIC.length + 32);
+  const ciphertext = blob.subarray(MAGIC.length + 32);
+
+  const hardcodedPassword = Buffer.alloc(64);
+  for (let i = 0; i < 64; i++) {
+    hardcodedPassword[i] = JG[i] ^ KG[i];
+  }
+
+  const shaSalt = crypto.createHash("sha512").update(salt).digest();
+  const kdfBuf = Buffer.concat([shaSalt, hardcodedPassword]);
+  const kdfOut = crypto.createHash("sha512").update(kdfBuf).digest();
+
+  const aesKey = kdfOut.subarray(0, 16);
+  const iv = kdfOut.subarray(16, 32);
+
+  const decipher = crypto.createDecipheriv("aes-128-cbc", aesKey, iv);
+  let plaintext = decipher.update(ciphertext);
+  plaintext = Buffer.concat([plaintext, decipher.final()]);
+
+  if (plaintext.length < 64) {
+    throw new Error("Plaintext too short");
+  }
+
+  const expectedHash = plaintext.subarray(0, 64);
+  const data = plaintext.subarray(64);
+
+  const actualHash = crypto.createHash("sha512").update(data).digest();
+  if (!expectedHash.equals(actualHash)) {
+    throw new Error("Integrity check failed");
+  }
+
+  return data.toString("utf8");
+}
+
 /**
  * Read Trae's auth info directly from its local storage.
  * Returns { token, refreshToken, expiredAt, refreshExpiredAt, host } or null.
  */
 function getTokenFromTraeStorage() {
   // Use cache if fresh
-  if (cachedTraeAuth && (Date.now() - cachedTraeAuthTime < CACHE_TTL)) {
+  if (cachedTraeAuth && Date.now() - cachedTraeAuthTime < CACHE_TTL) {
     return cachedTraeAuth;
   }
 
@@ -46,8 +108,20 @@ function getTokenFromTraeStorage() {
       if (!match) continue;
 
       // The value is a JSON string that's been escaped (double-encoded)
-      const rawValue = match[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-      const authData = JSON.parse(rawValue);
+      const rawValue = match[1].replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+
+      let authData = null;
+      if (rawValue.trim().startsWith("{")) {
+        authData = JSON.parse(rawValue);
+      } else {
+        try {
+          const decrypted = decryptBase64Blob(rawValue);
+          authData = JSON.parse(decrypted);
+        } catch (decErr) {
+          console.warn(`[TraeMonitor] Failed to decrypt blob: ${decErr.message}`);
+          authData = JSON.parse(rawValue); // fallback
+        }
+      }
 
       if (authData && authData.token) {
         console.log(`[TraeMonitor] Auto-read token from: ${storagePath}`);
