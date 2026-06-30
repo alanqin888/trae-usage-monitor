@@ -360,10 +360,10 @@ function activate(context) {
         }
 
         // Now refresh
-        updateUsage(true);
+        updateUsage();
       } catch (err) {
         // Clipboard read failed, just refresh
-        updateUsage(true);
+        updateUsage();
       }
     },
   );
@@ -427,7 +427,7 @@ function activate(context) {
   );
 }
 
-async function updateUsage(showPopup = false) {
+async function updateUsage() {
   const config = vscode.workspace.getConfiguration("traeMonitor");
   const apiUrl = config.get("apiUrl") || DEFAULT_URL;
 
@@ -706,47 +706,6 @@ async function updateUsage(showPopup = false) {
       itemPro.text = "$(circle-slash) Trae: No Data";
       itemPro.tooltip = "No entitlement packages found.";
       itemPro.show();
-    }
-
-    // 5. Show Details Popup if manually clicked
-    if (showPopup) {
-      let popupMsg = `⚡ Trae Usage Status:\n`;
-      if (isDollarBilling) {
-        const totalBasicLeft = packs.reduce(
-          (sum, p) => sum + Math.max(0, p.left),
-          0,
-        );
-        const totalBonusUsed = packs.reduce((sum, p) => sum + p.bonusUsed, 0);
-        const effectiveRemaining = Math.max(0, totalBasicLeft - totalBonusUsed);
-        popupMsg += `💰 Total Balance Remaining: $${effectiveRemaining.toFixed(2)}\n`;
-      }
-
-      packs.forEach((p) => {
-        popupMsg += `\n📦 ${p.name}:\n`;
-        if (p.isDollarBilling) {
-          popupMsg += `   • Basic Balance: $${p.left.toFixed(2)} remaining / $${p.limit.toFixed(2)}\n`;
-          if (p.bonusUsed > 0) {
-            popupMsg += `   • Bonus Used: $${p.bonusUsed.toFixed(2)}\n`;
-          }
-        } else {
-          popupMsg += `   • Request Quota: ${p.left.toFixed(0)} remaining / ${p.limit.toFixed(0)}\n`;
-        }
-
-        if (p.premiumLimit > 0) {
-          popupMsg += `   • Premium Requests: ${p.premiumUsed} / ${p.premiumLimit} used\n`;
-        }
-        if (p.autoCompleteLimit !== 0) {
-          const limitStr = p.autoCompleteLimit === -1 ? "Unlimited" : p.autoCompleteLimit;
-          popupMsg += `   • Autocomplete requests: ${p.autoCompleteUsed} / ${limitStr}\n`;
-        }
-        popupMsg += `   • Expiry Date: ${p.expDate.split(",")[0]}\n`;
-      });
-
-      vscode.window.showInformationMessage(popupMsg, "Refresh", "Ok").then((choice) => {
-        if (choice === "Refresh") {
-          vscode.commands.executeCommand("traeMonitor.refresh");
-        }
-      });
     }
 
   } catch (error) {
