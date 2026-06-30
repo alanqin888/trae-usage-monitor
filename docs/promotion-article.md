@@ -120,7 +120,7 @@ Trae 的网页 Token 有效期大概只有 8 小时。对于一个要常开的�
 
 ---
 
-**#Trae #AI编程 #产品经理 #开源 #VSCode插件**
+**#Trae [[AI编程]] [[产品经理]] [[开源]] [[VSCode插件]]**
 
 ---
 
@@ -136,7 +136,7 @@ Trae 的网页 Token 有效期大概只有 8 小时。对于一个要常开的�
 
 开源了：github.com/alanqin888/trae-usage-monitor
 
-#Trae #AI编程 #开源
+[[Trae]] [[AI编程]] [[开源]]
 ```
 
 ---
@@ -164,7 +164,7 @@ Open-sourced on GitHub: github.com/alanqin888/trae-usage-monitor
 
 Curious about AI-assisted development? Happy to share more details.
 
-#AIEngineering #ProductManagement #OpenSource #Trae #BuildInPublic
+[[AIEngineering]] [[ProductManagement]] [[OpenSource]] [[Trae]] [[BuildInPublic]]
 ```
 
 ---
